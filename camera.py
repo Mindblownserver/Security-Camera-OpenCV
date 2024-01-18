@@ -1,12 +1,21 @@
 from PyQt5.QtGui import QImage, QPixmap
-from PyQt5.QtCore import QThread, pyqtSignal, Qt
+from PyQt5.QtCore import QObject, QThread, pyqtSignal, Qt
 from PyQt5.QtWidgets import QLabel, QWidget, QHBoxLayout
 import cv2
 class Camera(QThread):
     ImageUpdate = pyqtSignal(QImage)
+    def __init__(self, tab):
+        super().__init__()
+        self.tab = tab
     def run(self):
         self.ThreadActive = True
-        Capture = cv2.VideoCapture(-1)
+        # tab=[ip, user,passw]
+        url=""
+        if(self.tab[1]!="" and self.tab[2]!=""):
+            url = "rtsp://{}:{}@{}/h264_ulaw.sdp"
+        else:
+            url = f"rtsp://{self.tab[0]}/h264_ulaw.sdp"
+        Capture = cv2.VideoCapture(-1 if self.tab[0]=="" else url)
         while self.ThreadActive:
             ret, frame = Capture.read()
             if ret:
@@ -18,23 +27,19 @@ class Camera(QThread):
         self.ThreadActive = False
         self.quit()
 
-class LL(QLabel):
-    def __init__(self):
-        super().__init__()
-        self.setText("Heya")
-
 class CameraWidget(QWidget):
-    def __init__(self):
+    def __init__(self,tab):
         super().__init__()
         self.feed = QLabel()
         self.box = QHBoxLayout(self)
         self.box.addWidget(self.feed)
-        self.loadFeed()
+        self.loadFeed(tab)
         #self.feed.setStyleSheet("QWidget { background-color: %s }" % QColor(0, 0, 0).name())
     def ImageUpdateSlot(self, Image):
         self.feed.show()
         self.feed.setPixmap(QPixmap.fromImage(Image))
-    def loadFeed(self):
-        self.Camera = Camera()
+    def loadFeed(self,tab):
+        self.Camera = Camera(tab)
         self.Camera.start()
         self.Camera.ImageUpdate.connect(self.ImageUpdateSlot)
+# 10.85.158.158:8080
