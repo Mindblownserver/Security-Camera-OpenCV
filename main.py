@@ -1,22 +1,22 @@
 import sys
 from PyQt5.QtWidgets import QWidget, QApplication, QGridLayout
 from PyQt5.uic import loadUi
+from PyQt5.QtCore import Qt
 from AddCamera import AddCameraDialog
 from camera import CameraWidget
 import os
 class MainWindow(QWidget):
     def __init__(self):
         super(MainWindow, self).__init__()
-        path = os.path.dirname(__file__) +"/HomeUi.ui"
+        path = os.path.dirname(__file__) +"/HomeUi1.ui"
         loadUi(path, self)
         self.dictDesCameras=dict()
-        self.grid = QGridLayout(self.Cameras)
-
+        #self.grid = QGridLayout(self.Cameras)
         #self.FeedLabel = QLabel()
 
         #self.CancelBTN = QPushButton("Cancel")
         self.RemoveCamera.clicked.connect(self.CancelFeed)
-        self.AddCamera.clicked.connect(self.popupg)
+        self.AddCamera.clicked.connect(self.popup)
     def popup(self):
         
         dlg = AddCameraDialog(self.dictDesCameras)
@@ -28,7 +28,12 @@ class MainWindow(QWidget):
             print("Cancel!")
 
     def loadCamera(self):
-        self.grid.addWidget(CameraWidget(self.dictDesCameras[len(self.dictDesCameras)-1]))
+        num = len(self.dictDesCameras)
+        x= self.Cameras.size().width()
+        y=self.Cameras.size().height()
+        print(x,y)
+        #refresh Layout(resize children of layout to in order to add one more child)
+        self.gridLayout.addWidget(CameraWidget(self.dictDesCameras[num-1], x,y),0,0,1,1,alignment=Qt.AlignmentFlag.AlignCenter)
         
 
     def CancelFeed(self):
@@ -44,5 +49,6 @@ GOD I WISH I LEARNT FROM MY LESSON, BUT NOOOOOO, I DID NOTTTT!!!!!
 if __name__ == "__main__":
     App = QApplication(sys.argv)
     Root = MainWindow()
-    Root.show()
+
+    Root.showMaximized()
     sys.exit(App.exec())
